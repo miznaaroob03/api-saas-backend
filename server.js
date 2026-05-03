@@ -76,8 +76,20 @@ app.get('/api/dashboard', auth, (req, res) => {
 
 // 5. Connections
 // Redis with Error Handling
-const redis = new Redis(process.env.REDIS_URL, {
-    tls: {}, // ADD THIS LINE for Upstash/Production
+// 1. Get the URL from environment
+const redisUrl = process.env.REDIS_URL;
+
+// 2. This log will show up in Render so we can debug!
+if (!redisUrl) {
+    console.log("❌ DEBUG: REDIS_URL is missing or undefined in Render environment!");
+} else {
+    console.log("📡 DEBUG: Attempting to connect to Redis URL starting with:", redisUrl.substring(0, 10));
+}
+
+// 3. The connection logic
+const redis = new Redis(redisUrl, {
+    // Only use TLS if the URL starts with 'rediss'
+    tls: redisUrl && redisUrl.startsWith('rediss://') ? {} : undefined,
     connectTimeout: 10000, 
     maxRetriesPerRequest: 1 
 });
